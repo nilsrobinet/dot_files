@@ -1,0 +1,9 @@
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+alias l="ls"
+alias la="la -a"
+alias ll="ls -latrh"
+
+alias py="python3"
+alias -g vi="vim"
+alias pgrep="echo 'USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND'&&ps aux | grep "
