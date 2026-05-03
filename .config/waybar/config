@@ -1,0 +1,82 @@
+{
+  /////// general /////////////////////////////////////////////////
+  "layer": "top",
+  "position": "top",
+  "height": 28,
+
+  "modules-left": ["hyprland/workspaces"],
+  "modules-center": ["clock", "hyprland/window"],
+
+  // right side grouped into "sound" + "net" + notifications + tray
+  "modules-right": [
+    "pulseaudio",
+    "custom/audio_sink",
+    "custom/notifications"
+  ],
+
+  /////// left ////////////////////////////////////////////////////
+
+  "hyprland/workspaces": {
+    "disable-scroll": true,
+    "all-outputs": true
+  },
+  
+  /////// right ////////////////////////////////////////////////////
+
+  "pulseaudio": {
+    "format": "{volume}% 🕪 ",
+    "format-muted": "muted 🕨 ",
+    "scroll-step": 5,
+    "on-click": "pavucontrol",
+    "on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+    "on-scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +5%",
+    "on-scroll-down": "pactl set-sink-volume @DEFAULT_SINK@ -5%"
+  },
+
+  "custom/notifications": {
+    "tooltip": false,
+    "format": "{icon}",
+    "format-icons": {
+      "notification": "",
+      "none": "",
+      "dnd-notification": "",
+      "dnd-none": "",
+      "inhibited-notification": "",
+      "inhibited-none": "",
+      "dnd-inhibited-notification": "",
+      "dnd-inhibited-none": ""
+    },
+    "return-type": "json",
+    "exec-if": "which swaync-client",
+    "exec": "swaync-client -swb",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "on-scroll-up": "swaync-client -C -sw",
+    "on-scroll-down": "swaync-client -c -sw",
+    "escape": true
+  },
+
+  "custom/audio_sink": {
+    "exec": "~/.config/waybar/scripts/audio-sink-cycle-pa.sh print",
+    "on-click": "~/.config/waybar/scripts/audio-sink-cycle-pa.sh cycle",
+    "interval": 2,
+    "return-type": "text",
+    "tooltip": false
+  },
+
+  "tray": {
+    "spacing": 10
+  },
+
+  /////// center /////////////////////////////////////////////////
+
+  "clock": {
+    "format": "{:%H:%M}",
+    "tooltip-format": "{:%A, %d %B %Y}"
+  },
+
+  "hyprland/window": {
+    "separate-outputs": true
+  }
+
+}

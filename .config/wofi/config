@@ -1,0 +1,9 @@
+mode=drun,run
+term=kitty
+hide_scroll=false
+insensitive=true
+height=45%
+width=45%
+prompt=Search...
+allow_markup=true
+columns=3

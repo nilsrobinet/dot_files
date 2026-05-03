@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CMD="${1:-print}"
+
+get_default() { pactl get-default-sink; }
+
+sink_desc() {
+  local sink="$1"
+  pactl list sinks | awk -v s="$sink" '
+    $0 == "Name: " s {found=1; next}
+    found && $0 ~ /^[[:space:]]*Description: / {
+      sub(/^[[:space:]]*Description: /,"")
+      print
+      exit
+    }
+    found && $0 ~ /^Name: / {found=0}
+  '
+}
+
+pretty_from_name() {
+  # Portable cleanup for PulseAudio sink names like:
+  # alsa_output.pci-0000_06_00.1.hdmi-stereo-extra1
+  # alsa_output.pci-0000_08_00.4.iec958-stereo
+  local s="$1"
+
+  # drop obvious prefixes
+  s="${s#alsa_output.}"
+  s="${s#bluez_output.}"
+
+  # turn separators into spaces
+  s="$(printf '%s' "$s" | tr '._-' ' ' )"
+
+  # remove bus/location-ish tokens (generic patterns, not vendor-specific)
+  s="$(printf '%s\n' "$s" | sed -E '
+    s/\bpci[[:space:]]*[0-9A-Fa-f]{4}[[:space:]]*[0-9A-Fa-f]{2}[[:space:]]*[0-9A-Fa-f]{2}\.[0-9]\b//gI;
+    s/\b[0-9A-Fa-f]{4}[[:space:]]*[0-9A-Fa-f]{2}[[:space:]]*[0-9A-Fa-f]{2}\.[0-9]\b//g;
+    s/\b([0-9]+)\b//g;              # drop leftover pure numbers
+    s/\b(stereo|mono)\b//gI;
+    s/[[:space:]]+/ /g;
+    s/^[[:space:]]+|[[:space:]]+$//g;
+  ')"
+
+  # If we still have nothing, fall back to the original name
+  [[ -n "$s" ]] || s="$1"
+
+  # Title-case-ish (first letter uppercase)
+  printf '%s\n' "$s" | awk '{ $1=$1; print substr($0,1,1) toupper(substr($0,2)) }'
+}
+
+print_current() {
+  local def desc label
+  def="$(get_default)"
+  desc="$(sink_desc "$def" || true)"
+
+  if [[ -n "${desc:-}" ]]; then
+    label="$desc"
+  else
+    label="$(pretty_from_name "$def")"
+  fi
+
+  echo "  $label"
+}
+
+cycle() {
+  local def next
+  def="$(get_default)"
+  mapfile -t sinks < <(pactl list short sinks | awk '{print $2}')
+  ((${#sinks[@]} > 0)) || exit 0
+
+  next="${sinks[0]}"
+  for i in "${!sinks[@]}"; do
+    if [[ "${sinks[$i]}" == "$def" ]]; then
+      next="${sinks[$(( (i+1) % ${#sinks[@]} ))]}"
+      break
+    fi
+  done
+
+  pactl set-default-sink "$next" >/dev/null
+}
+
+case "$CMD" in
+  print) print_current ;;
+  cycle) cycle; print_current ;;
+  *) echo "usage: $0 [print|cycle]" >&2; exit 2 ;;
+esac
