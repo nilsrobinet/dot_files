@@ -4,22 +4,42 @@
   "position": "top",
   "height": 28,
 
-  "modules-left": ["hyprland/workspaces"],
+  "modules-left": ["custom/logout", "hyprland/workspaces"],
   "modules-center": ["clock", "hyprland/window"],
 
   // right side grouped into "sound" + "net" + notifications + tray
   "modules-right": [
     "pulseaudio",
     "custom/audio_sink",
+    "idle_inhibitor",
     "custom/notifications"
   ],
 
   /////// left ////////////////////////////////////////////////////
 
+  "custom/logout": {
+    "format": "⏻",
+    "on-click": "wlogout",
+    //"interval": 2,
+    //"return-type": "text",
+    "tooltip": false
+  },
+
   "hyprland/workspaces": {
     "disable-scroll": true,
     "all-outputs": true
   },
+
+
+  "idle_inhibitor": {
+  	"format": "{icon}",
+  	"format-icons": {
+  		"activated": "",
+  		"deactivated": ""
+  	},
+  	"timeout": 30.5
+  },
+
   
   /////// right ////////////////////////////////////////////////////
 
